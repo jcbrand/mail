@@ -19,29 +19,27 @@ use OCP\Security\ICrypto;
 
 class AutoConfig {
 
-	/**
-	 * @var Logger
-	 */
+	/** @var Logger */
 	private $logger;
 
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	private $userId;
 
-	/**
-	 * @var ICrypto
-	 */
+	/** @var ICrypto */
 	private $crypto;
+
+	/** @var boolean */
+	private $testSmtp;
 
 	/**
 	 * @param Logger $logger
 	 * @param string $userId
 	 */
-	public function __construct(Logger $logger, $userId, ICrypto $crypto) {
+	public function __construct(Logger $logger, $userId, ICrypto $crypto, $testSmtp) {
 		$this->logger = $logger;
 		$this->userId = $userId;
 		$this->crypto = $crypto;
+		$this->testSmtp = $testSmtp;
 	}
 
 	/**
@@ -84,6 +82,14 @@ class AutoConfig {
 		return null;
 	}
 
+	/**
+	 * @param MailAccount $account
+	 * @param $host
+	 * @param $users
+	 * @param $password
+	 * @param bool $withHostPrefix
+	 * @return bool
+	 */
 	private function testSmtp(MailAccount $account, $host, $users, $password, $withHostPrefix = false) {
 		if (!is_array($users)) {
 			$users = [$users];
@@ -121,7 +127,7 @@ class AutoConfig {
 
 							$this->logger->info("Test-Account-Successful: $this->userId, $url, $port, $user, $protocol");
 
-							return $account;
+							return true;
 						} catch (\Exception $e) {
 							$error = $e->getMessage();
 							$this->logger->info("Test-Account-Failed: $this->userId, $url, $port, $user, $protocol -> $error");
@@ -130,7 +136,7 @@ class AutoConfig {
 				}
 			}
 		}
-		return null;
+		return false;
 	}
 
 	/**
@@ -334,9 +340,12 @@ class AutoConfig {
 	 * @param $account
 	 * @param $email
 	 * @param $password
-	 * @return MailAccount|null
 	 */
 	private function detectSmtp(MailAccount $account, $email, $password) {
+
+		if ($this->testSmtp === false) {
+			return;
+		}
 
 		// splitting the email address into user and host part
 		list($user, $host) = explode("@", $email);
@@ -349,7 +358,7 @@ class AutoConfig {
 			foreach ($mxHosts as $mxHost) {
 				$result = $this->testSmtp($account, $mxHost, [$user, $email], $password);
 				if ($result) {
-					return $result;
+					return;
 				}
 			}
 		}
@@ -358,7 +367,7 @@ class AutoConfig {
 		 * IMAP login with full email address as user
 		 * works for a lot of providers (e.g. Google Mail)
 		 */
-		return $this->testSmtp($account, $host, [$user, $email], $password, true);
+		$this->testSmtp($account, $host, [$user, $email], $password, true);
 	}
 
 	/**
