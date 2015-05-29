@@ -42,39 +42,25 @@ use OCP\ILogger;
 use OCP\Security\ICrypto;
 
 class AccountsController extends Controller {
-	/**
-	 * @var \OCA\Mail\Db\MailAccountMapper
-	 */
+	/** @var \OCA\Mail\Db\MailAccountMapper */
 	private $mapper;
 
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	private $currentUserId;
 
-	/**
-	 * @var ContactsIntegration
-	 */
+	/** @var ContactsIntegration */
 	private $contactsIntegration;
 
-	/**
-	 * @var AutoConfig
-	 */
+	/** @var AutoConfig */
 	private $autoConfig;
 
-	/**
-	 * @var \OCP\Files\Folder
-	 */
+	/** @var \OCP\Files\Folder */
 	private $userFolder;
 
-	/**
-	 * @var ILogger
-	 */
+	/** @var ILogger */
 	private $logger;
 
-	/**
-	 * @var IL10N
-	 */
+	/** @var IL10N */
 	private $l10n;
 
 	/** @var ICrypto */

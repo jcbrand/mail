@@ -14,27 +14,23 @@ use Horde_Imap_Client_Ids;
 use Horde_Imap_Client_Mailbox;
 use Horde_Imap_Client_Socket;
 use Horde_Imap_Client;
+use Horde_Mail_Transport_Mail;
 use Horde_Mail_Transport_Smtphorde;
 use OCA\Mail\Cache\Cache;
 use OCA\Mail\Db\MailAccount;
 use OCP\IConfig;
 use OCP\ICacheFactory;
+use OCP\Security\ICrypto;
 
 class Account {
 
-	/**
-	 * @var MailAccount
-	 */
+	/** @var MailAccount */
 	private $account;
 
-	/**
-	 *  @var Mailbox[]|null
-	 */
+	/** @var Mailbox[]|null */
 	private $mailboxes;
 
-	/**
-	 * @var Horde_Imap_Client_Socket
-	 */
+	/** @var Horde_Imap_Client_Socket */
 	private $client;
 
 	/** @var ICrypto */
@@ -126,7 +122,6 @@ class Account {
 		$conn->createMailbox($mailBox);
 		$this->mailboxes = null;
 
-//		$mailBox = \Horde_Imap_Client_Mailbox::get($mailBox, false)->utf7imap;
 		return $this->getMailbox($mailBox);
 	}
 
@@ -238,6 +233,11 @@ class Account {
 	 * @return Horde_Mail_Transport_Smtphorde
 	 */
 	public function createTransport() {
+		$transport = $this->config->getSystemValue('app.mail.transport', 'smtp');
+		if ($transport === 'php-mail') {
+			return new Horde_Mail_Transport_Mail();
+		}
+
 		$password = $this->account->getOutboundPassword();
 		$password = $this->crypto->decrypt($password);
 		$params = [
@@ -281,7 +281,7 @@ class Account {
 	 * @return Mailbox The best candidate for the "drafts" inbox
 	 */
 	public function getDraftsFolder() {
-		// check for existense
+		// check for existence
 		$draftsFolder = $this->getSpecialFolder('drafts', true);
 		if (count($draftsFolder) === 0) {
 			// drafts folder does not exist - let's create one
