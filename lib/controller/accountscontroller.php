@@ -233,8 +233,13 @@ class AccountsController extends Controller {
 		$bcc = $this->params('bcc');
 		$draftUID = $this->params('draftUID');
 
-		$dbAccount = $this->accountService->find($this->currentUserId, $accountId);
-		$account = new Account($dbAccount);
+		$account = $this->accountService->find($this->currentUserId, $accountId);
+		if (!$account instanceof Account) {
+			return new JSONResponse(
+				array('message' => 'Invalid account'),
+				Http::STATUS_BAD_REQUEST
+			);
+		}
 
 		// get sender data
 		$headers = [];
@@ -354,8 +359,13 @@ class AccountsController extends Controller {
 			$this->logger->info("Updating draft <$uid> in account <$accountId>");
 		}
 
-		$dbAccount = $this->accountService->find($this->currentUserId, $accountId);
-		$account = new Account($dbAccount);
+		$account = $this->accountService->find($this->currentUserId, $accountId);
+		if (!$account instanceof Account) {
+			return new JSONResponse(
+				array('message' => 'Invalid account'),
+				Http::STATUS_BAD_REQUEST
+			);
+		}
 
 		// get sender data
 		$headers = [];
