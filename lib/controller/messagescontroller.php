@@ -159,6 +159,7 @@ class MessagesController extends Controller {
 
 	/**
 	 * @NoAdminRequired
+	 * @NoCSRFRequired
 	 *
 	 * @param int $messageId
 	 * @return JSONResponse
@@ -327,7 +328,6 @@ class MessagesController extends Controller {
 			'accountId' => $accountId,
 			'folderId' => $folderId,
 			'messageId' => $id,
-			'requesttoken' => \OCP\Util::callRegister(),
 		]);
 		return \OC::$server->getURLGenerator()->getAbsoluteURL($htmlBodyUrl);
 	}
